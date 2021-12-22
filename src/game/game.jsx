@@ -30,6 +30,31 @@ const ELEMENT_TYPES = {
   Z: "Z",
 };
 
+/**
+ *
+ * @param {number[][]} matrix
+ * @returns {number[][]}
+ */
+function rotateMatrixLeft(matrix) {
+  // TODO: сделать функцию которая обновлет элемент with, haidht, shape
+
+  const result = [];
+  let rowLen = matrix.length;
+  let colLen = matrix[0].length;
+
+  for (let col = 0; col < colLen; col++) {
+    let nextRow = [];
+
+    for (let row = rowLen - 1; row >= 0; row--) {
+      nextRow.push(matrix[row][col]);
+    }
+
+    result.push(nextRow);
+  }
+
+  return result;
+}
+
 const POSITION_0 = {
   [ELEMENT_TYPES.J]: [
     [1, 0, 0],
@@ -53,24 +78,34 @@ const POSITION_2 = {
 };
 
 const POSITION_3 = {
-  [ELEMENT_TYPES.J]: [
-    [0, 1],
-    [0, 1],
-    [1, 1],
-  ],
+  [ELEMENT_TYPES.J]: {
+    width: 2,
+    height: 3,
+    sprite: [
+      [0, 1],
+      [0, 1],
+      [1, 1],
+    ],
+  },
 };
 
 const gameTick = createEvent();
+
+const moveLeft = createEvent();
+const moveRight = createEvent();
+
+const rotateLeft = createEvent();
+const rotateRight = createEvent();
 
 const $game = createStore({
   area: Array.from(Array(AREA_ROWS)).map(() => {
     return Array.from(Array(AREA_COLUMNS)).map(() => 0);
   }),
   activeElement: {
+    ...POSITION_3[ELEMENT_TYPES.J],
     type: ELEMENT_TYPES.J,
-    sprite: POSITION_3.J,
     color: COLOR_CLASSES.red,
-    x: 0,
+    x: 5,
     y: 0,
   },
   canvas: Array.from(Array(AREA_ROWS)).map(() => {
@@ -78,17 +113,70 @@ const $game = createStore({
   }),
 });
 
+function comitState(state) {
+  const canvas = merge(state.area, state.activeElement);
+
+  return { ...state, canvas };
+}
+
+function flowElement(activeElement) {
+  const { y } = activeElement;
+
+  return {
+    ...activeElement,
+    y: y < AREA_ROWS ? y + 1 : y,
+  };
+}
+
+function leftElement(activeElement) {
+  const { x } = activeElement;
+
+  return {
+    ...activeElement,
+    x: x > 0 ? x - 1 : x,
+  };
+}
+
+function rightElement(activeElement) {
+  const { x, width } = activeElement;
+
+  return {
+    ...activeElement,
+    x: x + width < AREA_COLUMNS ? x + 1 : x,
+  };
+}
+
+function updateElement(state, reducer) {
+  return {
+    ...state,
+    activeElement: reducer(state.activeElement),
+  };
+}
+
 $game.on(gameTick, (state) => {
-  if (state.activeElement.y < AREA_ROWS) {
-    state.activeElement.y += 1;
+  const nextState = updateElement(state, flowElement);
 
-    const a = merge(state.area, state.activeElement);
-    console.log("🚀 ~ $game.on ~ a", a);
+  return comitState(nextState);
+});
 
-    state.canvas = merge(state.area, state.activeElement);
-  }
+$game.on(moveLeft, (state) => {
+  const nextState = updateElement(state, leftElement);
 
-  return { ...state };
+  return comitState(nextState);
+});
+
+$game.on(moveRight, (state) => {
+  const nextState = updateElement(state, rightElement);
+
+  return comitState(nextState);
+});
+
+$game.on(rotateLeft, (state) => {
+  return state;
+});
+
+$game.on(rotateRight, (state) => {
+  return state;
 });
 
 function merge(area, element) {
@@ -139,13 +227,39 @@ function merge(area, element) {
 //   [0, 0, 0, 0, 0, 0],
 // ];
 
+/**
+ *
+ * @param {KeyboardEvent} event
+ */
+function handleKeyDown(event) {
+  if (event.key === "ArrowLeft") {
+    return moveLeft();
+  }
+
+  if (event.key === "ArrowRight") {
+    return moveRight();
+  }
+
+  if (event.key === "ArrowDown") {
+    return gameTick();
+  }
+}
+
+function useControls() {
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+  });
+}
+
 export function Game() {
-  console.log("render");
+  // console.log("render");
   // const r1 = JSON.stringify(merge(area1, element1));
   // const r2 = JSON.stringify(expectedArea);
   // console.log("🚀 ~ Game ~ r1 === r2", r1 === r2);
 
   const game = useStore($game);
+
+  useControls();
 
   useEffect(() => {
     setInterval(gameTick, 1000);
@@ -154,12 +268,12 @@ export function Game() {
   return (
     <div className="game">
       <div className="game-area">
-        {console.log(
+        {/* {console.log(
           "🚀 ~ {game.canvas.flat ~ game.canvas.flat()",
           game.canvas.flat()
-        )}
+        )} */}
         {game.canvas.flat().map((color, rowIndex) => {
-          console.log("🚀 ~ {game.canvas.flat ~ color", color);
+          // console.log("🚀 ~ {game.canvas.flat ~ color", color);
 
           return <div className={cn("area-cell", color)} key={rowIndex}></div>;
         })}
