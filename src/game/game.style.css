@@ -1,0 +1,56 @@
+:root {
+  --cell-size: 32;
+  --area-columns: 12;
+  --area-rows: 21;
+  --area-width: calc(var(--cell-size) * var(--area-columns) * 1px);
+  --area-height: calc(var(--cell-size) * var(--area-rows) * 1px);
+}
+
+.game {
+}
+
+.game-area {
+  display: flex;
+  flex-wrap: wrap;
+  width: var(--area-width);
+  height: var(--area-height);
+  background-color: tomato;
+}
+
+.area-cell {
+  box-sizing: border-box;
+  width: calc(var(--cell-size) * 1px);
+  height: calc(var(--cell-size) * 1px);
+
+  /* TODO: remove this */
+  border: 1px solid black;
+  border-width: 1px 0 0 1px;
+}
+
+.area-cell.cyan {
+  background-color: cyan;
+}
+
+.area-cell.blue {
+  background-color: blue;
+}
+
+.area-cell.orange {
+  background-color: orange;
+}
+
+.area-cell.yellow {
+  background-color: yellow;
+}
+
+.area-cell.green {
+  background-color: greenyellow;
+}
+
+.area-cell.pink {
+  background-color: palevioletred;
+}
+
+.area-cell.red {
+  background-color: red;
+}
