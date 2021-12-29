@@ -14,7 +14,7 @@
   flex-wrap: wrap;
   width: var(--area-width);
   height: var(--area-height);
-  background-color: tomato;
+  background-color: rgba(255, 99, 71, 0.2);
 }
 
 .area-cell {
