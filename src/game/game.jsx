@@ -18,47 +18,42 @@ import {
   updateGameElement,
 } from "../modules/game/game";
 
+const startNewGame = createEvent();
 const gameTick = createEvent();
-
 const moveLeft = createEvent();
 const moveRight = createEvent();
-
 const rotateLeft = createEvent();
 const rotateRight = createEvent();
 
-const $game = createStore(createGame());
+const $game = createStore(createGame())
+  .on(startNewGame, createGame)
+  .on(gameTick, (state) => {
+    const nextState = updateGameElement(state, flowGameElement);
 
-$game.on(gameTick, (state) => {
-  const nextState = updateGameElement(state, flowGameElement);
+    return updateGameCanvas(nextState);
+  })
+  .on(moveLeft, (state) => {
+    const nextState = updateGameElement(state, leftGameElement);
 
-  return updateGameCanvas(nextState);
-});
+    return updateGameCanvas(nextState);
+  })
+  .on(moveRight, (state) => {
+    const nextState = updateGameElement(state, rightGameElement);
 
-$game.on(moveLeft, (state) => {
-  const nextState = updateGameElement(state, leftGameElement);
+    return updateGameCanvas(nextState);
+  })
+  .on(rotateLeft, (state) => {
+    // TODO: Add rotate posibility checck
+    const nextState = updateGameElement(state, rotateGameElementLeft);
 
-  return updateGameCanvas(nextState);
-});
+    return updateGameCanvas(nextState);
+  })
+  .on(rotateRight, (state) => {
+    // TODO: Add rotate posibility checck
+    const nextState = updateGameElement(state, rotateGameElementRight);
 
-$game.on(moveRight, (state) => {
-  const nextState = updateGameElement(state, rightGameElement);
-
-  return updateGameCanvas(nextState);
-});
-
-$game.on(rotateLeft, (state) => {
-  // TODO: Add rotate posibility checck
-  const nextState = updateGameElement(state, rotateGameElementLeft);
-
-  return updateGameCanvas(nextState);
-});
-
-$game.on(rotateRight, (state) => {
-  // TODO: Add rotate posibility checck
-  const nextState = updateGameElement(state, rotateGameElementRight);
-
-  return updateGameCanvas(nextState);
-});
+    return updateGameCanvas(nextState);
+  });
 
 /**
  *
@@ -102,11 +97,16 @@ export function Game() {
   useControls();
 
   useEffect(() => {
-    setInterval(gameTick, 1000);
-  }, []);
+    const id = setInterval(gameTick, 1000);
+
+    return () => {
+      clearInterval(id);
+    };
+  }, [game.timestamp]);
 
   return (
     <div className="game">
+      <button onClick={startNewGame}>Start New Game</button>
       <div className="game-area">
         {game.canvas.flat().map((color, rowIndex) => {
           return <div className={cn("area-cell", color)} key={rowIndex}></div>;

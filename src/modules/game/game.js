@@ -11,6 +11,7 @@ import { getRandomGameElement } from "../game-element/game-element";
 
 /**
  * @typedef {Object} Game
+ * @property {number} timestamp
  * @property {GameField} area
  * @property {GameField} canvas
  * @property {GameElement} activeElement
@@ -30,6 +31,7 @@ function createGameField() {
  */
 export function createGame() {
   return {
+    timestamp: Date.now(),
     area: createGameField(),
     canvas: createGameField(),
     activeElement: getRandomGameElement(),
@@ -64,23 +66,22 @@ export function updateGameElement(game, reducer) {
  * @returns {GameField}
  */
 export function merge(field, element) {
-  const result = [];
+  const fieldCopy = JSON.parse(JSON.stringify(field));
+  const elementCellsOnField = [];
 
   element.shape.forEach((row, indexY) => {
     row.forEach((value, indexX) => {
-      if (value === 0) {
-        return;
+      if (value === 1) {
+        elementCellsOnField.push([element.x + indexX, element.y + indexY]);
       }
-
-      result.push([element.x + indexX, element.y + indexY]);
     });
   });
 
-  const areaCopy = field.map((row) => [...row]);
+  return elementCellsOnField.reduce((fieldResult, [x, y]) => {
+    if (x >= 0 && y >= 0) {
+      fieldResult[y][x] = element.color;
+    }
 
-  return result.reduce((acc, [x, y]) => {
-    acc[y][x] = element.color;
-
-    return acc;
-  }, areaCopy);
+    return fieldResult;
+  }, fieldCopy);
 }

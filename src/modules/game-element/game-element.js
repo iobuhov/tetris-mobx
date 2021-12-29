@@ -36,12 +36,15 @@ export function getRandomColor() {
  * @returns {GameElement}
  */
 export function creteGameElement(shape) {
+  const { width, height } = getShapeSize(shape);
+
   return {
-    ...getShapeSize(shape),
+    width,
+    height,
     color: getRandomColor(),
     shape: JSON.parse(JSON.stringify(shape)),
-    x: 5,
-    y: 0,
+    x: Math.floor((AREA_COLUMNS - width) / 2),
+    y: -height,
   };
 }
 
@@ -54,11 +57,11 @@ export function getRandomGameElement() {
  * @returns {GameElement}
  */
 export function flowGameElement(gameElement) {
-  const { y } = gameElement;
+  const { y, height } = gameElement;
 
   return {
     ...gameElement,
-    y: y < AREA_ROWS ? y + 1 : y,
+    y: y + height < AREA_ROWS ? y + 1 : y,
   };
 }
 
