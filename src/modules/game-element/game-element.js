@@ -1,4 +1,4 @@
-import { AREA_COLUMNS, AREA_ROWS } from "../../game.config";
+import { AREA_COLUMNS } from "../../game.config";
 import {
   getShapeSize,
   getRandomShape,
@@ -13,8 +13,6 @@ import { COLOR_CLASSES } from "./game-element.const";
 
 /**
  * @typedef {Object} GameElement
- * @property {number} width
- * @property {number} height
  * @property {Shape} shape
  * @property {number} x
  * @property {number} y
@@ -39,8 +37,6 @@ export function creteGameElement(shape) {
   const { width, height } = getShapeSize(shape);
 
   return {
-    width,
-    height,
     color: getRandomColor(),
     shape: JSON.parse(JSON.stringify(shape)),
     x: Math.floor((AREA_COLUMNS - width) / 2),
@@ -57,11 +53,9 @@ export function getRandomGameElement() {
  * @returns {GameElement}
  */
 export function flowGameElement(gameElement) {
-  const { y, height } = gameElement;
-
   return {
     ...gameElement,
-    y: y + height < AREA_ROWS ? y + 1 : y,
+    y: gameElement.y + 1,
   };
 }
 
@@ -70,11 +64,9 @@ export function flowGameElement(gameElement) {
  * @returns {GameElement}
  */
 export function leftGameElement(gameElement) {
-  const { x } = gameElement;
-
   return {
     ...gameElement,
-    x: x > 0 ? x - 1 : x,
+    x: gameElement.x - 1,
   };
 }
 
@@ -83,11 +75,9 @@ export function leftGameElement(gameElement) {
  * @returns {GameElement}
  */
 export function rightGameElement(gameElement) {
-  const { x, width } = gameElement;
-
   return {
     ...gameElement,
-    x: x + width < AREA_COLUMNS ? x + 1 : x,
+    x: gameElement.x + 1,
   };
 }
 
@@ -117,4 +107,22 @@ export function rotateGameElementLeft(gameElement) {
     ...getShapeSize(shape),
     shape,
   };
+}
+
+/**
+ * @param {GameElement} gameElement
+ * @returns {([number, number])[]}
+ */
+export function getElementCells(gameElement) {
+  const elementCellsOnField = [];
+
+  gameElement.shape.forEach((row, indexY) => {
+    row.forEach((value, indexX) => {
+      if (value === 1) {
+        elementCellsOnField.push([gameElement.x + indexX, gameElement.y + indexY]);
+      }
+    });
+  });
+
+  return elementCellsOnField;
 }

@@ -1,5 +1,5 @@
 import { AREA_COLUMNS, AREA_ROWS } from "../../game.config";
-import { getRandomGameElement } from "../game-element/game-element";
+import { getRandomGameElement, getElementCells } from "../game-element/game-element";
 
 /**
  * @typedef {import('../game-element/game-element.js').GameElement} GameElement
@@ -17,14 +17,23 @@ import { getRandomGameElement } from "../game-element/game-element";
  * @property {GameElement} activeElement
  */
 
+
+const defaultEmptyRow = Array.from(Array(AREA_COLUMNS)).map(() => 0);
+
+function createEmptyRow() {
+  return [...defaultEmptyRow];
+}
+
 /**
  * @returns {GameField}
  */
 function createGameField() {
   return Array.from(Array(AREA_ROWS)).map(() => {
-    return Array.from(Array(AREA_COLUMNS)).map(() => 0);
+    return createEmptyRow();
   });
 }
+
+
 
 /**
  * @returns {Game}
@@ -43,9 +52,23 @@ export function createGame() {
  * @returns {Game}
  */
 export function updateGameCanvas(game) {
-  const canvas = merge(game.area, game.activeElement);
+  return {
+    ...game,
+    canvas: merge(game.area, game.activeElement)
+  };
+}
 
-  return { ...game, canvas };
+/**
+ *
+ * @param {Game} game
+ * @returns {Game}
+ */
+export function startNewElement(game) {
+  return {
+    ...game,
+    area: merge(game.area, game.activeElement),
+    activeElement: getRandomGameElement(),
+  };
 }
 
 /**
@@ -63,19 +86,89 @@ export function updateGameElement(game, reducer) {
 /**
  * @param {GameField} field
  * @param {GameElement} element
+ * @returns {Boolean}
+ */
+export function checkFieldAndElementIntersection(field, element) {
+  return getElementCells(element).some(([x, y]) => {
+    return !!(field[y] && field[y][x]);
+  });
+}
+
+/**
+ * @param {GameField} field
+ * @param {GameElement} element
+ * @returns {Boolean}
+ */
+export function isElementOutOfFieldByX(field, element) {
+  const columns = field[0].length;
+
+  return getElementCells(element).some(([x]) => {
+    return x < 0 || x >= columns;
+  })
+}
+
+/**
+ * @param {GameField} field
+ * @param {GameElement} element
+ * @returns {boolean}
+ */
+export function isElementReachBottom(field, element) {
+  return getElementCells(element).some(([, y]) => {
+    return y === field.length - 1;
+  })
+}
+
+/**
+ * @param {(string|0)[]} row
+ * @returns {(string|0)[]}
+ */
+function replaceFullRow(row) {
+  return row.every(x => !!x) ? createEmptyRow() : row;
+}
+
+/**
+ * Sort rows, put not empty at the bottom
+ * @param {(string|0)[]} row1
+ * @param {(string|0)[]} row2
+ * @returns {number}
+ */
+function emptyFirst(row1, row2) {
+  const isRow1Empty = row1.some(x => !!x);
+  const isRow2Empty = row2.some(x => !!x);
+
+  if (isRow1Empty && isRow2Empty) {
+    return 0;
+  }
+
+  if (isRow1Empty && !isRow2Empty) {
+    return 1;
+  }
+
+  if (isRow2Empty && !isRow1Empty) {
+    return -1;
+  }
+}
+
+/**
+ * @param {Game} game
+ * @returns {Game}
+ */
+export function removeGameLines(game) {
+  return {
+    ...game,
+    area: game.area.map(replaceFullRow).sort(emptyFirst),
+  }
+}
+
+
+/**
+ * @param {GameField} field
+ * @param {GameElement} element
  * @returns {GameField}
  */
 export function merge(field, element) {
   const fieldCopy = JSON.parse(JSON.stringify(field));
-  const elementCellsOnField = [];
-
-  element.shape.forEach((row, indexY) => {
-    row.forEach((value, indexX) => {
-      if (value === 1) {
-        elementCellsOnField.push([element.x + indexX, element.y + indexY]);
-      }
-    });
-  });
+  const elementCellsOnField = getElementCells(element);
 
   return elementCellsOnField.reduce((fieldResult, [x, y]) => {
     if (x >= 0 && y >= 0) {

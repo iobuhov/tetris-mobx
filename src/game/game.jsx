@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from "react";
+import { useEffect } from "react";
 import cn from "classnames";
 import { createStore, createEvent } from "effector";
 import { useStore } from "effector-react";
@@ -16,6 +16,10 @@ import {
   createGame,
   updateGameCanvas,
   updateGameElement,
+  checkFieldAndElementIntersection,
+  isElementOutOfFieldByX,
+  startNewElement, isElementReachBottom,
+  removeGameLines,
 } from "../modules/game/game";
 
 const startNewGame = createEvent();
@@ -25,35 +29,70 @@ const moveRight = createEvent();
 const rotateLeft = createEvent();
 const rotateRight = createEvent();
 
+function gameUpdate(state) {
+  if (isElementOutOfFieldByX(state.area, flowGameElement(state.activeElement))) {
+    return state;
+  }
+
+  if (isElementReachBottom(state.area, state.activeElement) || checkFieldAndElementIntersection(state.area, flowGameElement(state.activeElement))) {
+    return removeGameLines(startNewElement(state));
+  }
+
+  const nextState = updateGameElement(state, flowGameElement);
+
+  return updateGameCanvas(nextState);
+}
+
+/**
+ * @param {Function} reducer
+ * @returns {(game: Game) => Game}
+ */
+export function withRotateChecks(reducer) {
+  return (game) => {
+    const futureElement = reducer(game.activeElement);
+    if (checkFieldAndElementIntersection(game.area, futureElement) || isElementReachBottom(game.area, futureElement)) {
+      return game;
+    }
+
+    if (isElementOutOfFieldByX(game.area, futureElement)) {
+      return game;
+    }
+
+    const updatedGame = updateGameElement(game, reducer);
+
+    return updateGameCanvas(updatedGame);
+  };
+}
+
+/**
+ * @param {Function} reducer
+ * @returns {(game: Game) => Game}
+ */
+export function withMoveChecks(reducer) {
+  return (game) => {
+    const futureElement = reducer(game.activeElement);
+    if (checkFieldAndElementIntersection(game.area, futureElement)) {
+      return game;
+    }
+
+    if (isElementOutOfFieldByX(game.area, futureElement)) {
+      return game;
+    }
+
+    const updatedGame = updateGameElement(game, reducer);
+
+    return updateGameCanvas(updatedGame);
+  };
+}
+
+
 const $game = createStore(createGame())
   .on(startNewGame, createGame)
-  .on(gameTick, (state) => {
-    const nextState = updateGameElement(state, flowGameElement);
-
-    return updateGameCanvas(nextState);
-  })
-  .on(moveLeft, (state) => {
-    const nextState = updateGameElement(state, leftGameElement);
-
-    return updateGameCanvas(nextState);
-  })
-  .on(moveRight, (state) => {
-    const nextState = updateGameElement(state, rightGameElement);
-
-    return updateGameCanvas(nextState);
-  })
-  .on(rotateLeft, (state) => {
-    // TODO: Add rotate posibility checck
-    const nextState = updateGameElement(state, rotateGameElementLeft);
-
-    return updateGameCanvas(nextState);
-  })
-  .on(rotateRight, (state) => {
-    // TODO: Add rotate posibility checck
-    const nextState = updateGameElement(state, rotateGameElementRight);
-
-    return updateGameCanvas(nextState);
-  });
+  .on(gameTick, gameUpdate)
+  .on(moveLeft, withMoveChecks(leftGameElement))
+  .on(moveRight, withMoveChecks(rightGameElement))
+  .on(rotateLeft, withRotateChecks(rotateGameElementLeft))
+  .on(rotateRight, withRotateChecks(rotateGameElementRight));
 
 /**
  *
@@ -106,11 +145,17 @@ export function Game() {
 
   return (
     <div className="game">
-      <button onClick={startNewGame}>Start New Game</button>
-      <div className="game-area">
+
+      <div tabIndex="0" className="game-area">
         {game.canvas.flat().map((color, rowIndex) => {
-          return <div className={cn("area-cell", color)} key={rowIndex}></div>;
+          return <div className={cn("area-cell", color, color && "element")} key={rowIndex} />;
         })}
+      </div>
+      <div className="game-stats">
+        <button onClick={() => {
+          document.querySelector('.game-area').focus();
+          startNewGame();
+        }}>Start New Game</button>
       </div>
     </div>
   );

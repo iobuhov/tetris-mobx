@@ -1,57 +1,77 @@
 :root {
-  --cell-size: 32;
+  /*--cell-size: 32;*/
   --area-columns: 12;
   --area-rows: 21;
-  --area-width: calc(var(--cell-size) * var(--area-columns) * 1px);
-  --area-height: calc(var(--cell-size) * var(--area-rows) * 1px);
+  --cell-size: calc(100vh / var(--area-rows));
+  --area-width: calc(var(--cell-size) * var(--area-columns));
+  --area-height: 100vh;
+  --area-border-color: rgba(255, 255, 255, 0.1);
+  --dark-bg: #2D2C3B;
+  --page-bg: #403e54;
+  --game-area-bg: var(--dark-bg)
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--page-bg);
+  margin: 0;
 }
 
 .game {
+  display: flex;
+  justify-content: center;
+  align-content: center;
 }
 
+.game-stats {
+  width: 300px;
+}
 .game-area {
-  margin-top: 15px;
   display: flex;
   flex-wrap: wrap;
   width: var(--area-width);
   height: var(--area-height);
-  background-color: rgba(255, 99, 71, 0.2);
+  background-color: var(--game-area-bg);
 }
 
 .area-cell {
-  box-sizing: border-box;
-  width: calc(var(--cell-size) * 1px);
-  height: calc(var(--cell-size) * 1px);
+  width: calc(var(--cell-size));
+  height: calc(var(--cell-size));
+  border: 1px solid var(--area-border-color);
+}
 
-  /* TODO: remove this */
-  border: 1px solid black;
-  border-width: 1px 0 0 1px;
+.area-cell.element {
+  border: 5px outset currentColor;
+  background: currentColor;
 }
 
 .area-cell.cyan {
-  background-color: cyan;
+  color: cyan;
 }
 
 .area-cell.blue {
-  background-color: blue;
+  color: #5d8bff;
 }
 
 .area-cell.orange {
-  background-color: orange;
+  color: orange;
 }
 
 .area-cell.yellow {
-  background-color: yellow;
+  color: yellow;
 }
 
 .area-cell.green {
-  background-color: greenyellow;
+  color: greenyellow;
 }
 
 .area-cell.pink {
-  background-color: palevioletred;
+  color: #ff9cc1;
 }
 
 .area-cell.red {
-  background-color: red;
+  color: #ff4d4d;
 }
