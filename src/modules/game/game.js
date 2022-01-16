@@ -1,5 +1,8 @@
 import { AREA_COLUMNS, AREA_ROWS } from "../../game.config";
-import { getRandomGameElement, getElementCells } from "../game-element/game-element";
+import {
+  getRandomGameElement,
+  getElementCells,
+} from "../game-element/game-element";
 
 /**
  * @typedef {import('../game-element/game-element.js').GameElement} GameElement
@@ -15,10 +18,12 @@ import { getRandomGameElement, getElementCells } from "../game-element/game-elem
  * @property {GameField} area
  * @property {GameField} canvas
  * @property {GameElement} activeElement
+ * @property {number} score
+ * @property {boolean} paused
+ * @property {boolean} gameOver
  */
 
-
-const defaultEmptyRow = Array.from(Array(AREA_COLUMNS)).map(() => 0);
+const defaultEmptyRow = Array(AREA_COLUMNS).fill(0);
 
 function createEmptyRow() {
   return [...defaultEmptyRow];
@@ -28,12 +33,8 @@ function createEmptyRow() {
  * @returns {GameField}
  */
 function createGameField() {
-  return Array.from(Array(AREA_ROWS)).map(() => {
-    return createEmptyRow();
-  });
+  return Array(AREA_ROWS).fill(createEmptyRow());
 }
-
-
 
 /**
  * @returns {Game}
@@ -41,6 +42,9 @@ function createGameField() {
 export function createGame() {
   return {
     timestamp: Date.now(),
+    score: 0,
+    paused: false,
+    gameOver: false,
     area: createGameField(),
     canvas: createGameField(),
     activeElement: getRandomGameElement(),
@@ -54,7 +58,7 @@ export function createGame() {
 export function updateGameCanvas(game) {
   return {
     ...game,
-    canvas: merge(game.area, game.activeElement)
+    canvas: merge(game.area, game.activeElement),
   };
 }
 
@@ -104,7 +108,7 @@ export function isElementOutOfFieldByX(field, element) {
 
   return getElementCells(element).some(([x]) => {
     return x < 0 || x >= columns;
-  })
+  });
 }
 
 /**
@@ -115,7 +119,7 @@ export function isElementOutOfFieldByX(field, element) {
 export function isElementReachBottom(field, element) {
   return getElementCells(element).some(([, y]) => {
     return y === field.length - 1;
-  })
+  });
 }
 
 /**
@@ -123,7 +127,7 @@ export function isElementReachBottom(field, element) {
  * @returns {(string|0)[]}
  */
 function replaceFullRow(row) {
-  return row.every(x => !!x) ? createEmptyRow() : row;
+  return row.every((x) => !!x) ? createEmptyRow() : row;
 }
 
 /**
@@ -133,8 +137,8 @@ function replaceFullRow(row) {
  * @returns {number}
  */
 function emptyFirst(row1, row2) {
-  const isRow1Empty = row1.some(x => !!x);
-  const isRow2Empty = row2.some(x => !!x);
+  const isRow1Empty = row1.some((x) => !!x);
+  const isRow2Empty = row2.some((x) => !!x);
 
   if (isRow1Empty && isRow2Empty) {
     return 0;
@@ -150,16 +154,36 @@ function emptyFirst(row1, row2) {
 }
 
 /**
+ * @param {GameField} gameField
+ * @returns {GameField}
+ */
+function removeLinesFromArea(gameField) {
+  return gameField.map(replaceFullRow).sort(emptyFirst);
+}
+
+/**
+ * @param {GameField} gameField
+ * @param {number} score - initial score
+ * @returns {number}
+ */
+function incScore(gameField, score) {
+  return gameField.reduce(
+    (acc, row) => (row.every((x) => !!x) ? acc + 1 : acc),
+    score
+  );
+}
+
+/**
  * @param {Game} game
  * @returns {Game}
  */
 export function removeGameLines(game) {
   return {
     ...game,
-    area: game.area.map(replaceFullRow).sort(emptyFirst),
-  }
+    area: removeLinesFromArea(game.area),
+    score: incScore(game.area, game.score),
+  };
 }
-
 
 /**
  * @param {GameField} field
@@ -177,4 +201,25 @@ export function merge(field, element) {
 
     return fieldResult;
   }, fieldCopy);
+}
+
+/**
+ * @param {Game} game
+ * @returns {Game}
+ */
+export function toggleGamePause(game) {
+  return { ...game, paused: !game.paused };
+}
+
+/**
+ * @param {Game} game
+ * @returns {Game}
+ */
+export function updateGameOver(game) {
+  const gameOver = getElementCells(game.activeElement).some(([_, y]) => y < 0);
+  return {
+    ...game,
+    gameOver,
+    paused: gameOver || game.paused,
+  };
 }

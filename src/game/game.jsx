@@ -18,8 +18,11 @@ import {
   updateGameElement,
   checkFieldAndElementIntersection,
   isElementOutOfFieldByX,
-  startNewElement, isElementReachBottom,
+  startNewElement,
+  isElementReachBottom,
   removeGameLines,
+  toggleGamePause,
+  updateGameOver,
 } from "../modules/game/game";
 
 const startNewGame = createEvent();
@@ -28,13 +31,35 @@ const moveLeft = createEvent();
 const moveRight = createEvent();
 const rotateLeft = createEvent();
 const rotateRight = createEvent();
+const togglePause = createEvent();
 
+/**
+ * @typedef {import('../modules/game/game.js').Game} Game
+ */
+
+/**
+ * @param {Game} state
+ */
 function gameUpdate(state) {
-  if (isElementOutOfFieldByX(state.area, flowGameElement(state.activeElement))) {
+  if (
+    isElementOutOfFieldByX(state.area, flowGameElement(state.activeElement))
+  ) {
     return state;
   }
 
-  if (isElementReachBottom(state.area, state.activeElement) || checkFieldAndElementIntersection(state.area, flowGameElement(state.activeElement))) {
+  if (
+    isElementReachBottom(state.area, state.activeElement) ||
+    checkFieldAndElementIntersection(
+      state.area,
+      flowGameElement(state.activeElement)
+    )
+  ) {
+    const nextState = updateGameOver(state);
+
+    if (nextState.gameOver) {
+      return nextState;
+    }
+
     return removeGameLines(startNewElement(state));
   }
 
@@ -50,7 +75,10 @@ function gameUpdate(state) {
 export function withRotateChecks(reducer) {
   return (game) => {
     const futureElement = reducer(game.activeElement);
-    if (checkFieldAndElementIntersection(game.area, futureElement) || isElementReachBottom(game.area, futureElement)) {
+    if (
+      checkFieldAndElementIntersection(game.area, futureElement) ||
+      isElementReachBottom(game.area, futureElement)
+    ) {
       return game;
     }
 
@@ -85,14 +113,14 @@ export function withMoveChecks(reducer) {
   };
 }
 
-
 const $game = createStore(createGame())
   .on(startNewGame, createGame)
   .on(gameTick, gameUpdate)
   .on(moveLeft, withMoveChecks(leftGameElement))
   .on(moveRight, withMoveChecks(rightGameElement))
   .on(rotateLeft, withRotateChecks(rotateGameElementLeft))
-  .on(rotateRight, withRotateChecks(rotateGameElementRight));
+  .on(rotateRight, withRotateChecks(rotateGameElementRight))
+  .on(togglePause, toggleGamePause);
 
 /**
  *
@@ -118,6 +146,10 @@ function handleKeyDown(event) {
   if (event.key === "ArrowDown") {
     return rotateLeft();
   }
+
+  if (event.key === "Escape") {
+    return togglePause();
+  }
 }
 
 function useControls() {
@@ -130,32 +162,68 @@ function useControls() {
   });
 }
 
+function Popup({ children }) {
+  return (
+    <div className="game-popup-container">
+      <div className={cn("game-popup")}>{children}</div>
+    </div>
+  );
+}
+
+function GamePopup({ game, onGameReset }) {
+  if (game.gameOver) {
+    return (
+      <Popup>
+        <div className="message">Game over!</div>
+        <div className="score">Your score: {game.score}</div>
+        <button onClick={onGameReset}>start new game</button>
+      </Popup>
+    );
+  }
+
+  if (game.paused) {
+    return <Popup>Paused!</Popup>;
+  }
+
+  return null;
+}
+
 export function Game() {
   const game = useStore($game);
 
   useControls();
 
-  useEffect(() => {
-    const id = setInterval(gameTick, 1000);
+  const onRestartGame = () => {
+    document.querySelector(".game-area").focus();
+    startNewGame();
+  };
 
-    return () => {
-      clearInterval(id);
-    };
-  }, [game.timestamp]);
+  useEffect(() => {
+    if (!game.paused) {
+      const id = setInterval(gameTick, 1000);
+
+      return () => {
+        clearInterval(id);
+      };
+    }
+  }, [game.timestamp, game.paused]);
 
   return (
-    <div className="game">
-
+    <div className={cn("game")}>
+      <GamePopup game={game} onGameReset={onRestartGame} />
       <div tabIndex="0" className="game-area">
         {game.canvas.flat().map((color, rowIndex) => {
-          return <div className={cn("area-cell", color, color && "element")} key={rowIndex} />;
+          return (
+            <div
+              className={cn("area-cell", color, color && "element")}
+              key={rowIndex}
+            />
+          );
         })}
       </div>
       <div className="game-stats">
-        <button onClick={() => {
-          document.querySelector('.game-area').focus();
-          startNewGame();
-        }}>Start New Game</button>
+        <button onClick={onRestartGame}>Start New Game</button>
+        <div className="score">Score: {game.score}</div>
       </div>
     </div>
   );
