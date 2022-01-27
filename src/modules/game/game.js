@@ -2,6 +2,8 @@ import { AREA_COLUMNS, AREA_ROWS } from "../../game.config";
 import {
   getRandomGameElement,
   getElementCells,
+  flowGameElement,
+  teleportGameElementOnY,
 } from "../game-element/game-element";
 
 /**
@@ -88,6 +90,27 @@ export function updateGameElement(game, reducer) {
 }
 
 /**
+ * @param {Game} game
+ * @returns {Game}
+ */
+export function teleportActiveElement(game) {
+  const elementCells = getElementCells(game.activeElement);
+  const maxY = elementCells.reduce((result, [_, y]) => Math.max(result, y), 0);
+  const searchY = maxY + 1;
+  const columns = [...new Set(elementCells.map(([x]) => x))];
+
+  const firstNotEmptyY = game.area
+    .slice(searchY)
+    .findIndex((row) => columns.some((x) => row[x]));
+
+  const cellY = firstNotEmptyY !== -1 ? searchY + firstNotEmptyY : AREA_ROWS;
+
+  return updateGameElement(game, (element) =>
+    teleportGameElementOnY(element, cellY - 1)
+  );
+}
+
+/**
  * @param {GameField} field
  * @param {GameElement} element
  * @returns {Boolean}
@@ -120,6 +143,20 @@ export function isElementReachBottom(field, element) {
   return getElementCells(element).some(([, y]) => {
     return y === field.length - 1;
   });
+}
+
+/**
+ * @param {Game} game
+ * @returns {boolean}
+ */
+export function isElementStuck(game) {
+  return (
+    isElementReachBottom(game.area, game.activeElement) ||
+    checkFieldAndElementIntersection(
+      game.area,
+      flowGameElement(game.activeElement)
+    )
+  );
 }
 
 /**
@@ -222,4 +259,29 @@ export function updateGameOver(game) {
     gameOver,
     paused: gameOver || game.paused,
   };
+}
+
+/**
+ * @param {Game} state
+ */
+export function gameUpdate(state) {
+  if (
+    isElementOutOfFieldByX(state.area, flowGameElement(state.activeElement))
+  ) {
+    return state;
+  }
+
+  if (isElementStuck(state)) {
+    const nextState = updateGameOver(state);
+
+    if (nextState.gameOver) {
+      return nextState;
+    }
+
+    return removeGameLines(startNewElement(state));
+  }
+
+  const nextState = updateGameElement(state, flowGameElement);
+
+  return updateGameCanvas(nextState);
 }

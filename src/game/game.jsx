@@ -6,7 +6,6 @@ import { useStore } from "effector-react";
 import "./game.style.css";
 
 import {
-  flowGameElement,
   leftGameElement,
   rightGameElement,
   rotateGameElementLeft,
@@ -18,15 +17,15 @@ import {
   updateGameElement,
   checkFieldAndElementIntersection,
   isElementOutOfFieldByX,
-  startNewElement,
   isElementReachBottom,
-  removeGameLines,
   toggleGamePause,
-  updateGameOver,
+  gameUpdate,
+  teleportActiveElement,
 } from "../modules/game/game";
 
 const startNewGame = createEvent();
 const gameTick = createEvent();
+const teleport = createEvent();
 const moveLeft = createEvent();
 const moveRight = createEvent();
 const rotateLeft = createEvent();
@@ -38,46 +37,16 @@ const togglePause = createEvent();
  */
 
 /**
- * @param {Game} state
- */
-function gameUpdate(state) {
-  if (
-    isElementOutOfFieldByX(state.area, flowGameElement(state.activeElement))
-  ) {
-    return state;
-  }
-
-  if (
-    isElementReachBottom(state.area, state.activeElement) ||
-    checkFieldAndElementIntersection(
-      state.area,
-      flowGameElement(state.activeElement)
-    )
-  ) {
-    const nextState = updateGameOver(state);
-
-    if (nextState.gameOver) {
-      return nextState;
-    }
-
-    return removeGameLines(startNewElement(state));
-  }
-
-  const nextState = updateGameElement(state, flowGameElement);
-
-  return updateGameCanvas(nextState);
-}
-
-/**
  * @param {Function} reducer
  * @returns {(game: Game) => Game}
  */
 export function withRotateChecks(reducer) {
   return (game) => {
     const futureElement = reducer(game.activeElement);
+
     if (
-      checkFieldAndElementIntersection(game.area, futureElement) ||
-      isElementReachBottom(game.area, futureElement)
+      isElementReachBottom(game.area, futureElement) ||
+      checkFieldAndElementIntersection(game.area, futureElement)
     ) {
       return game;
     }
@@ -116,6 +85,7 @@ export function withMoveChecks(reducer) {
 const $game = createStore(createGame())
   .on(startNewGame, createGame)
   .on(gameTick, gameUpdate)
+  .on(teleport, (state) => gameUpdate(teleportActiveElement(state)))
   .on(moveLeft, withMoveChecks(leftGameElement))
   .on(moveRight, withMoveChecks(rightGameElement))
   .on(rotateLeft, withRotateChecks(rotateGameElementLeft))
@@ -127,7 +97,7 @@ const $game = createStore(createGame())
  * @param {KeyboardEvent} event
  */
 function handleKeyDown(event) {
-  if (event.key === " ") {
+  if (event.key === "ArrowDown") {
     return gameTick();
   }
 
@@ -140,11 +110,8 @@ function handleKeyDown(event) {
   }
 
   if (event.key === "ArrowUp") {
+    // return rotateLeft();
     return rotateRight();
-  }
-
-  if (event.key === "ArrowDown") {
-    return rotateLeft();
   }
 
   if (event.key === "Escape") {
@@ -152,12 +119,24 @@ function handleKeyDown(event) {
   }
 }
 
+/**
+ *
+ * @param {KeyboardEvent} event
+ */
+function handleKeyUp(event) {
+  if (event.key === " ") {
+    return teleport();
+  }
+}
+
 function useControls() {
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
     };
   });
 }

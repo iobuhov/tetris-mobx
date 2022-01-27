@@ -50,6 +50,18 @@ export function getRandomGameElement() {
 
 /**
  * @param {GameElement} gameElement
+ * @param {number} y
+ * @returns {GameElement}
+ */
+export function teleportGameElementOnY(gameElement, y) {
+  return {
+    ...gameElement,
+    y: y - gameElement.shape.length,
+  };
+}
+
+/**
+ * @param {GameElement} gameElement
  * @returns {GameElement}
  */
 export function flowGameElement(gameElement) {
@@ -119,7 +131,10 @@ export function getElementCells(gameElement) {
   gameElement.shape.forEach((row, indexY) => {
     row.forEach((value, indexX) => {
       if (value === 1) {
-        elementCellsOnField.push([gameElement.x + indexX, gameElement.y + indexY]);
+        elementCellsOnField.push([
+          gameElement.x + indexX,
+          gameElement.y + indexY,
+        ]);
       }
     });
   });
