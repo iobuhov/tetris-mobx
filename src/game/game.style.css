@@ -72,6 +72,7 @@ body {
 
 .area-cell {
   border: 1px solid var(--area-cell-border-color);
+  animation: flicker 300ms ease-in;
 }
 
 .area-cell.element {
@@ -109,4 +110,44 @@ body {
 
 .area-cell.red {
   color: #ff4d4d;
+}
+
+@keyframes changed {
+  from {
+    filter: invert(50%)
+  }
+
+  to {
+    filter: invert(0)
+  }
+}
+
+@keyframes flicker {
+  0% {
+    filter: invert(75%)
+  }
+
+  16% {
+    filter: invert(0)
+  }
+
+  32% {
+    filter: invert(75%)
+  }
+
+  48% {
+    filter: invert(0)
+  }
+
+  64% {
+    filter: invert(75%)
+  }
+
+  80% {
+    filter: invert(0)
+  }
+
+  96% {
+    filter: invert(75%)
+  }
 }
