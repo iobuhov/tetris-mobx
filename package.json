@@ -1,6 +1,6 @@
 {
-  "name": "sadasd",
-  "version": "0.0.0",
+  "name": "tetris-react-mobx",
+  "version": "0.1.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,8 +10,10 @@
     "classnames": "^2.3.1",
     "effector": "^22.1.2",
     "effector-react": "^22.0.4",
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0"
+    "mobx": "^6.12.0",
+    "mobx-react-lite": "^4.0.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^1.0.0",
