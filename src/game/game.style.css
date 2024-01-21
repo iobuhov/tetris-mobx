@@ -1,7 +1,13 @@
 :root {
-  --area-columns: 12;
-  --area-rows: 21;
-  --cell-size: calc(100vh / var(--area-rows));
+  --area-columns: 4;
+  --area-rows: 4;
+  --stats-min: 200px;
+  --stats-max: 300px;
+  --area-width: max(240px, 100vw - var(--stats-min));
+  --area-height: max(640px, 100vh);
+  --cell-size-by-h: calc(var(--area-height) / var(--area-rows));
+  --cell-size-by-w: calc(var(--area-width) / var(--area-columns));
+  --cell-size: min(var(--cell-size-by-w), var(--cell-size-by-h));
   --area-cell-border-color: rgba(255, 255, 255, 0.1);
   --element-border-color-light: rgba(255, 255, 255, 0.5);
   --element-border-color-dark: rgba(0, 0, 0, 0.2);
@@ -13,7 +19,9 @@
   --game-popup-bg: #454459;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -27,12 +35,8 @@ body {
 
 .game {
   display: grid;
-  grid-template-columns: auto minmax(160px, 1fr);
+  grid-template-columns: min-content minmax(var(--stats-min), var(--stats-max));
   position: relative;
-}
-
-.game-stats {
-  width: 300px;
 }
 
 .game-popup-container {
@@ -57,7 +61,7 @@ body {
   background-color: var(--game-area-bg);
   display: grid;
   grid-template-columns: repeat(var(--area-columns), var(--cell-size));
-  grid-template-rows: repeat(var( --area-rows), var(--cell-size));
+  grid-template-rows: repeat(var(--area-rows), var(--cell-size));
   column-gap: 0;
 }
 

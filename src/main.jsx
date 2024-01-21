@@ -1,11 +1,11 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Game } from "./game/game";
+import { Sandbox } from "./game/sandbox";
 
 const root = createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
-    <Game />
+    <Sandbox />
   </React.StrictMode>
 );
