@@ -1,5 +1,3 @@
-import { gameUpdate } from "../game/game"
-
 class CellVM {
     id
     constructor(row, col) {
