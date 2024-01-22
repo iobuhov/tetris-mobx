@@ -31,9 +31,6 @@ function createGame() {
     const box1 = new Box(new RXPoint(0, 0));
     box1.setPoints([new RXPoint(0, 0, { fill: "red" }), new RXPoint(0, 1, { fill: "red" })])
 
-    // const box2 = new Box(new RXPoint(1, 0));
-    // box2.setPoints([new RXPoint(0, 0, { fill: "blue" })])
-
     const shO = shapes.shapeO(3, 0);
     const shI = shapes.shapeI(0, 3);
     const shJ = shapes.shapeJ(2, 3);

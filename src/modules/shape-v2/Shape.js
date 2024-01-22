@@ -1,6 +1,4 @@
 import { action, makeObservable } from "mobx";
-import { RXPoint } from "../models/RXPoint"
-import { getRandomColor } from "./utils";
 
 export class Shape {
     size
@@ -50,11 +48,11 @@ export class Shape {
     }
 
     moveLeft(n = 1) {
-        this.box.anchor.x += n;
+        this.box.anchor.x -= n;
     }
 
     moveRight(n = 1) {
-        this.box.anchor.x -= n;
+        this.box.anchor.x += n;
     }
 
     moveDown(n = 1) {
