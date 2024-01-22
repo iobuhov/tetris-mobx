@@ -1,19 +1,18 @@
-import { action, autorun, makeObservable, observable } from "mobx"
-import { transformWithEsbuild } from "vite"
+import { action, autorun, makeObservable, observable } from "mobx";
 
 export class Game {
-    paused = false
-    gameSpeed = 1000
+    paused = false;
+    gameSpeed = 1000;
     constructor(canvas, compositeBox, field) {
-        this.canvas = canvas
-        this.compositeBox = compositeBox
-        this.field = field
+        this.canvas = canvas;
+        this.compositeBox = compositeBox;
+        this.field = field;
 
         makeObservable(this, {
             paused: observable,
             gameSpeed: observable,
-            togglePause: action
-        })
+            togglePause: action,
+        });
     }
 
     togglePause() {
@@ -25,20 +24,20 @@ export class Game {
     }
 
     setupEffects() {
-        const disposer = autorun(() => this.startGameTimer())
+        const disposer = autorun(() => this.startGameTimer());
         return () => {
-            disposer()
+            disposer();
             if (this.stopTimer) {
-                this.stopTimer()
+                this.stopTimer();
             }
-        }
+        };
     }
 
     startGameTimer() {
         const { paused, gameSpeed } = this;
 
         if (this.stopTimer) {
-            this.stopTimer()
+            this.stopTimer();
         }
 
         if (paused) {
@@ -46,7 +45,7 @@ export class Game {
         }
 
         const timerId = setInterval(() => {
-            requestAnimationFrame(() => this.tick())
+            requestAnimationFrame(() => this.tick());
         }, gameSpeed);
 
         this.stopTimer = () => clearInterval(timerId);
