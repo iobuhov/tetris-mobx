@@ -31,6 +31,14 @@ export class RXPoint {
         return `${this.offsetX}.${this.offsetY}`;
     }
 
+    setX(x) {
+        this.x = x;
+    }
+
+    setY(y) {
+        this.y = y;
+    }
+
     setFill(fill) {
         this.fill = fill;
     }
