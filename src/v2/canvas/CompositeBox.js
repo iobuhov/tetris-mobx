@@ -15,7 +15,7 @@ export class CompositeBox {
     get fillMap() {
         return this.boxes.reduce((map, box) => {
             for (const [k, v] of box.fillMap.entries()) {
-                if (map.has(k)) {
+                if (map.has(k) && v !== undefined) {
                     map.set(k, v);
                 }
             }
