@@ -2,8 +2,8 @@ import { action, computed, makeObservable, observable } from "mobx";
 import { RXPoint } from "./RXPoint";
 
 export class Box {
-    points = []
-    anchor
+    points = [];
+    anchor;
     constructor(anchor) {
         makeObservable(this, {
             points: observable,
@@ -11,26 +11,29 @@ export class Box {
             fillMap: computed,
             setPoints: action,
             merge: action,
-            copy: action
-        })
-        this.anchor = anchor
+            copy: action,
+            clear: action,
+        });
+        this.anchor = anchor;
     }
 
     get pointMap() {
         return this.points.reduce((map, point) => {
-            map.set(point.pos, point)
-            return map
-        }, new Map())
+            map.set(point.pos, point);
+            return map;
+        }, new Map());
     }
 
     get fillMap() {
-        return new Map(Array.from(this.pointMap, ([k, point]) => [k, point.fill]))
+        return new Map(
+            Array.from(this.pointMap, ([k, point]) => [k, point.fill])
+        );
     }
 
     setPoints(points) {
-        this.points = points.map(p => {
-            p.anchor = this.anchor
-            return p
+        this.points = points.map((p) => {
+            p.anchor = this.anchor;
+            return p;
         });
     }
 
@@ -46,6 +49,19 @@ export class Box {
     copy(box) {
         this.anchor.x = box.anchor.x;
         this.anchor.y = box.anchor.y;
-        this.setPoints(box.points.map(p => new RXPoint(p.x, p.y, { fill: p.fill })))
+        this.setPoints(
+            box.points.map((p) => new RXPoint(p.x, p.y, { fill: p.fill }))
+        );
+    }
+
+    isEmptyPoints(keys) {
+        return keys.every((key) => {
+            const point = this.pointMap.get(key);
+            return point && point.fill === undefined;
+        });
+    }
+
+    clear() {
+        this.points.forEach((point) => point.setFill(undefined));
     }
 }

@@ -1,14 +1,16 @@
 import { action, computed, makeObservable, observable } from "mobx";
 
 export class CompositeBox {
-    boxes = []
-    baseMap
+    boxes = [];
+    baseMap;
     constructor(width, height) {
         makeObservable(this, {
             boxes: observable,
             fillMap: computed,
-            addBox: action
-        })
+            addBox: action,
+            removeBox: action,
+            reset: action,
+        });
         this.baseMap = this.createBaseMap(width, height);
     }
 
@@ -21,11 +23,19 @@ export class CompositeBox {
             }
 
             return map;
-        }, new Map(this.baseMap))
+        }, new Map(this.baseMap));
     }
 
     addBox(box) {
         this.boxes.push(box);
+    }
+
+    removeBox(box) {
+        this.boxes.splice(this.boxes.indexOf(box), 1);
+    }
+
+    reset() {
+        this.boxes = [];
     }
 
     createBaseMap(width, height) {

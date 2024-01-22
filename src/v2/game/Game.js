@@ -1,18 +1,35 @@
 import { action, autorun, makeObservable, observable } from "mobx";
+import { Box } from "../canvas/Box";
+import { RXPoint } from "../canvas/RXPoint";
 
 export class Game {
     paused = false;
-    gameSpeed = 1000;
-    constructor(canvas, compositeBox, field) {
+    initialSpeed = 750;
+    gameSpeed = this.initialSpeed;
+    shape;
+    shapeViewBox;
+    constructor(canvas, compositeBox, field, factory) {
         this.canvas = canvas;
         this.compositeBox = compositeBox;
         this.field = field;
+        this.shapeFactory = factory;
 
         makeObservable(this, {
             paused: observable,
             gameSpeed: observable,
             togglePause: action,
+            reset: action,
         });
+    }
+
+    reset() {
+        this.paused = false;
+        this.gameSpeed = this.initialSpeed;
+        this.shape = undefined;
+        this.compositeBox.reset();
+        this.field.reset();
+        this.compositeBox.addBox(this.field.box);
+        this.startGameTimer();
     }
 
     togglePause() {
@@ -20,7 +37,17 @@ export class Game {
     }
 
     tick() {
-        console.log("Game is on!");
+        if (!this.shape) {
+            this.loadShape();
+            return;
+        }
+
+        if (this.isShapeStuck) {
+            this.endRound();
+            return;
+        } else {
+            this.moveShapeDown();
+        }
     }
 
     setupEffects() {
@@ -44,10 +71,105 @@ export class Game {
             return;
         }
 
-        const timerId = setInterval(() => {
-            requestAnimationFrame(() => this.tick());
-        }, gameSpeed);
-
+        const timerId = setInterval(this.scheduleTick, gameSpeed);
         this.stopTimer = () => clearInterval(timerId);
+    }
+
+    scheduleTick = () => {
+        requestAnimationFrame(() => this.tick());
+    };
+
+    loadShape() {
+        this.shape = this.shapeFactory(this.canvas.width);
+
+        if (this.isFull) {
+            this.shape.rotateClockwise();
+        }
+
+        if (this.isFull) {
+            this.gameOver();
+        } else {
+            this.shapeViewBox = new Box(new RXPoint(0, 0));
+            this.shapeViewBox.copy(this.shape.box);
+            this.compositeBox.addBox(this.shapeViewBox);
+        }
+    }
+
+    commitShape() {
+        this.shapeViewBox.copy(this.shape.box);
+    }
+
+    endRound() {
+        this.field.box.merge(this.shapeViewBox.points);
+        this.compositeBox.removeBox(this.shapeViewBox);
+        // TODO: Remove full lines
+        this.loadShape();
+    }
+
+    gameOver() {
+        console.log("game over");
+        this.stopTimer();
+    }
+
+    get isFull() {
+        return !this.field.box.isEmptyPoints(
+            this.shape.mapPoints((p) => p.pos)
+        );
+    }
+
+    get isShapeStuck() {
+        return !this.canMoveShapeDown;
+    }
+
+    get canMoveShapeDown() {
+        return this.field.box.isEmptyPoints(this.shape.getBottomKeys());
+    }
+
+    get canMoveShapeLeft() {
+        return this.field.box.isEmptyPoints(this.shape.getLeftKeys());
+    }
+
+    get canMoveShapeRight() {
+        return this.field.box.isEmptyPoints(this.shape.getRightKeys());
+    }
+
+    get canRotateShape() {
+        return this.field.box.isEmptyPoints(this.shape.getRotateKeys("cw"));
+    }
+
+    moveShapeLeft() {
+        if (this.canMoveShapeLeft) {
+            this.shape.moveLeft();
+            this.commitShape();
+        }
+    }
+
+    moveShapeRight() {
+        if (this.canMoveShapeRight) {
+            this.shape.moveRight();
+            this.commitShape();
+        }
+    }
+
+    moveShapeDown() {
+        if (this.canMoveShapeDown) {
+            this.shape.moveDown();
+            this.commitShape();
+        }
+    }
+
+    rotateShape() {
+        if (this.canRotateShape) {
+            this.shape.rotateClockwise();
+            this.commitShape();
+        }
+    }
+
+    dropShape() {
+        while (this.canMoveShapeDown) {
+            this.shape.moveDown();
+        }
+        this.commitShape();
+        this.endRound();
     }
 }

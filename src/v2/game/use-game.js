@@ -6,12 +6,59 @@ import { RXPoint } from "../canvas/RXPoint";
 import { Game } from "./Game";
 import * as shapes from "./shapes";
 import { Field } from "./Field";
+import { shapeFactory } from "./shape-factory";
 
 export function useGame() {
     const game = useMemo(createGame, []);
 
     useEffect(() => game.setupEffects(), []);
 
+    useEffect(() => {
+        /**
+         *
+         * @param {KeyboardEvent} event
+         */
+        function handleKeyDown(event) {
+            if (event.code === "ArrowDown") {
+                game.tick();
+                return;
+            }
+
+            if (event.code === "ArrowLeft") {
+                return game.moveShapeLeft();
+            }
+
+            if (event.code === "ArrowRight") {
+                return game.moveShapeRight();
+            }
+
+            if (event.code === "ArrowUp") {
+                return game.rotateShape();
+            }
+
+            if (event.code === "Escape") {
+                return game.togglePause();
+            }
+        }
+
+        /**
+         *
+         * @param {KeyboardEvent} event
+         */
+        function handleKeyUp(event) {
+            if (event.code === "Space") {
+                game.dropShape();
+            }
+        }
+
+        document.addEventListener("keydown", handleKeyDown);
+        document.addEventListener("keyup", handleKeyUp);
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+            document.removeEventListener("keyup", handleKeyUp);
+        };
+    }, []);
     window.__game = game;
     return game;
 }
@@ -19,46 +66,12 @@ export function useGame() {
 function createGame() {
     const width = 12;
     const height = 21;
-    const cbox = new CompositeBox(width, height);
-    const field = new Field(width, height + 3);
-    const canvas = new Canvas(width, height, cbox);
-    const game = new Game(canvas, cbox, field);
+    const compositeBox = new CompositeBox(width, height);
+    const field = new Field(width, height);
+    const canvas = new Canvas(width, height, compositeBox);
+    const game = new Game(canvas, compositeBox, field, shapeFactory);
 
-    cbox.addBox(field.box);
-
-    // const box1 = new Box(new RXPoint(0, 0));
-    // box1.setPoints([new RXPoint(0, 0, { fill: "red" }), new RXPoint(0, 1, { fill: "red" })])
-
-    // const shO = shapes.shapeO(3, 0);
-    // const shI = shapes.shapeI(0, 3);
-    // const shJ = shapes.shapeJ(2, 3);
-    // const shL = shapes.shapeL(5, 3);
-    // const shS = shapes.shapeS(8, 3);
-    // const shT = shapes.shapeT(0, 8);
-    // const shZ = shapes.shapeZ(4, 8);
-
-    // cbox.addBox(box1);
-    // cbox.addBox(shO.box);
-    // cbox.addBox(shI.box);
-    // cbox.addBox(shJ.box);
-    // cbox.addBox(shL.box);
-    // cbox.addBox(shS.box);
-    // cbox.addBox(shT.box);
-    // cbox.addBox(shZ.box);
-
-    Object.assign(globalThis, {
-        cbox,
-        // box1,
-        // shO,
-        // shI,
-        // shJ,
-        // shL,
-        // shS,
-        // shT,
-        // shZ,
-        field,
-        RXPoint
-    })
+    compositeBox.addBox(field.box);
 
     return game;
 }

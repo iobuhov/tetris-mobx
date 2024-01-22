@@ -1,155 +1,160 @@
 :root {
-  --area-columns: 12;
-  --area-rows: 21;
-  --stats-min: 200px;
-  --stats-max: 300px;
-  --area-width: max(240px, 100vw - var(--stats-min));
-  --area-height: max(640px, 100vh);
-  --cell-size-by-h: calc(var(--area-height) / var(--area-rows));
-  --cell-size-by-w: calc(var(--area-width) / var(--area-columns));
-  --cell-size: min(var(--cell-size-by-w), var(--cell-size-by-h));
-  --area-cell-border-color: rgba(255, 255, 255, 0.1);
-  --element-border-color-light: rgba(255, 255, 255, 0.5);
-  --element-border-color-dark: rgba(0, 0, 0, 0.2);
-  --dark-bg: #2D2C3B;
-  --page-bg: #403e54;
-  --game-area-bg: var(--dark-bg);
-  --game-area-overlay-bg: rgba(0, 0, 0, 0.7);
-  --text-color: #8e8e8e;
-  --game-popup-bg: #454459;
+    --area-columns: 12;
+    --area-rows: 21;
+    --stats-min: 200px;
+    --stats-max: 300px;
+    --area-width: max(240px, 100vw - var(--stats-min));
+    --area-height: max(640px, 100vh);
+    --cell-size-by-h: calc(var(--area-height) / var(--area-rows));
+    --cell-size-by-w: calc(var(--area-width) / var(--area-columns));
+    --cell-size: min(var(--cell-size-by-w), var(--cell-size-by-h));
+    --area-cell-border-color: rgba(255, 255, 255, 0.1);
+    --element-border-color-light: rgba(255, 255, 255, 0.5);
+    --element-border-color-dark: rgba(0, 0, 0, 0.2);
+    --dark-bg: #2d2c3b;
+    --page-bg: #403e54;
+    --game-area-bg: var(--dark-bg);
+    --game-area-overlay-bg: rgba(0, 0, 0, 0.7);
+    --text-color: #8e8e8e;
+    --game-popup-bg: #454459;
 }
 
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 body {
-  color: var(--text-color);
-  font-size: 150%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  background: var(--page-bg);
-  margin: 0;
+    color: var(--text-color);
+    font-size: 150%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+        "Segoe UI Symbol";
+    background: var(--page-bg);
+    margin: 0;
 }
 
 .game {
-  display: grid;
-  grid-template-columns: min-content minmax(var(--stats-min), var(--stats-max));
-  position: relative;
+    display: grid;
+    grid-template-columns: min-content minmax(
+            var(--stats-min),
+            var(--stats-max)
+        );
+    position: relative;
 }
 
 .game-popup-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--game-area-overlay-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--game-area-overlay-bg);
 }
 
 .game-popup {
-  padding: 30px;
-  min-width: 320px;
-  background-color: var(--game-popup-bg);
+    padding: 30px;
+    min-width: 320px;
+    background-color: var(--game-popup-bg);
 }
 
 .game-area {
-  background-color: var(--game-area-bg);
-  display: grid;
-  grid-template-columns: repeat(var(--area-columns), var(--cell-size));
-  grid-template-rows: repeat(var(--area-rows), var(--cell-size));
-  column-gap: 0;
+    background-color: var(--game-area-bg);
+    display: grid;
+    grid-template-columns: repeat(var(--area-columns), var(--cell-size));
+    grid-template-rows: repeat(var(--area-rows), var(--cell-size));
+    column-gap: 0;
 }
 
 .game-area:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 3px #eee;
+    outline: none;
+    box-shadow: inset 0 0 0 3px #eee;
 }
 
 .area-cell {
-  border: 1px solid var(--area-cell-border-color);
-  animation: changed 300ms ease-in;
-  color: var(--game-area-bg);
-  background-color: currentColor;
+    border: 1px solid var(--area-cell-border-color);
+    animation: changed 100ms ease-in;
+    color: var(--game-area-bg);
+    background-color: currentColor;
 }
 
 .area-cell.element {
-  border: 5px solid;
-  border-top-color: var(--element-border-color-light);
-  border-bottom-color: var(--element-border-color-dark);
-  border-left-color: var(--element-border-color-light);
-  border-right-color: var(--element-border-color-dark);
-  background: currentColor;
+    border: 5px solid;
+    border-top-color: var(--element-border-color-light);
+    border-bottom-color: var(--element-border-color-dark);
+    border-left-color: var(--element-border-color-light);
+    border-right-color: var(--element-border-color-dark);
+    background: currentColor;
 }
 
 .area-cell.cyan {
-  color: cyan;
+    color: cyan;
 }
 
 .area-cell.blue {
-  color: #5d8bff;
+    color: #5d8bff;
 }
 
 .area-cell.orange {
-  color: orange;
+    color: orange;
 }
 
 .area-cell.yellow {
-  color: #f9e700;
+    color: #f9e700;
 }
 
 .area-cell.green {
-  color: greenyellow;
+    color: greenyellow;
 }
 
 .area-cell.pink {
-  color: #ff9cc1;
+    color: #ff9cc1;
 }
 
 .area-cell.red {
-  color: #ff4d4d;
+    color: #ff4d4d;
 }
 
 @keyframes changed {
-  from {
-    filter: invert(75%)
-  }
+    from {
+        filter: invert(25%);
+    }
 
-  to {
-    filter: invert(0)
-  }
+    to {
+        filter: invert(0);
+    }
 }
 
 @keyframes flicker {
-  0% {
-    filter: invert(75%)
-  }
+    0% {
+        filter: invert(75%);
+    }
 
-  16% {
-    filter: invert(0)
-  }
+    16% {
+        filter: invert(0);
+    }
 
-  32% {
-    filter: invert(75%)
-  }
+    32% {
+        filter: invert(75%);
+    }
 
-  48% {
-    filter: invert(0)
-  }
+    48% {
+        filter: invert(0);
+    }
 
-  64% {
-    filter: invert(75%)
-  }
+    64% {
+        filter: invert(75%);
+    }
 
-  80% {
-    filter: invert(0)
-  }
+    80% {
+        filter: invert(0);
+    }
 
-  96% {
-    filter: invert(75%)
-  }
+    96% {
+        filter: invert(75%);
+    }
 }
