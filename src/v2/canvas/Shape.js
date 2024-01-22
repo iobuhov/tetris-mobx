@@ -27,23 +27,33 @@ export class Shape {
         return this.box.points;
     }
 
-    rotateClockwise() {
+    mapPoints(fn) {
+        return this.box.points.map(fn);
+    }
+
+    mapPointsClockwise() {
         const yMax = this.height - 1;
-        this.box.points.forEach(p => {
-            const { x, y } = p;
-            p.setX(yMax - y);
-            p.setY(x);
-        });
+        return this.mapPoints(p => ({ x: yMax - p.y, y: p.x }))
+    }
+
+    mapPointsAnticlockwise() {
+        const xMax = this.width - 1;
+        return this.mapPoints(p => ({ x: p.y, y: xMax - p.x }))
+    }
+
+    rotateClockwise() {
+        this.mapPointsClockwise().forEach(({ x, y }, index) => {
+            this.box.points[index].setX(x);
+            this.box.points[index].setY(y);
+        })
         this.size.reverse();
     }
 
     rotateAnticlockwise() {
-        const xMax = this.width - 1;
-        this.box.points.forEach(p => {
-            const { x, y } = p;
-            p.setX(y);
-            p.setY(xMax - x);
-        });
+        this.mapPointsAnticlockwise().forEach(({ x, y }, index) => {
+            this.box.points[index].setX(x);
+            this.box.points[index].setY(y);
+        })
         this.size.reverse();
     }
 
@@ -57,5 +67,22 @@ export class Shape {
 
     moveDown(n = 1) {
         this.box.anchor.y += n;
+    }
+
+    getBottomKeys() {
+        return this.mapPoints(p => `${p.offsetX}.${p.offsetY + 1}`)
+    }
+
+    getLeftKeys() {
+        return this.mapPoints(p => `${p.offsetX - 1}.${p.offsetY}`)
+    }
+
+    getRightKeys() {
+        return this.mapPoints(p => `${p.offsetX + 1}.${p.offsetY}`)
+    }
+
+    getRotateKeys(direction = "cw") {
+        const pts = direction === "cw" ? this.mapPointsClockwise() : this.mapPointsAnticlockwise();
+        return pts.map(({ x, y }) => `${this.box.anchor.x + x}.${this.box.anchor.y + y}`);
     }
 }
