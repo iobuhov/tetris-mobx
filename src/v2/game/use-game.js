@@ -1,27 +1,16 @@
-import cn from "classnames";
-import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
-import { Box } from "../v2/canvas/Box";
-import { CompositeBox } from "../v2/canvas/CompositeBox";
-import { Game } from "../v2/game/Game";
-import { RXPoint } from "../v2/canvas/RXPoint";
-import "./game.style.css";
-import { Canvas } from "../v2/canvas/Canvas";
-import * as shapes from "../v2/game/shapes";
+import { Box } from "../canvas/Box";
+import { Canvas } from "../canvas/Canvas";
+import { CompositeBox } from "../canvas/CompositeBox";
+import { RXPoint } from "../canvas/RXPoint";
+import { Game } from "./Game";
+import * as shapes from "./shapes";
 
-const PointView = observer(
-    ({ point }) =>
-        <div
-            key={Math.random()}
-            className={cn("area-cell", { ["element"]: point.fill }, point.fill)}
-        />
-)
-
-const GameArea = observer(({ renderer: canvas }) => (
-    <div tabIndex="0" className="game-area">
-        {canvas.points.map(point => <PointView key={point.id} point={point} />)}
-    </div>
-))
+export function useGame() {
+    const game = useMemo(createGame, []);
+    window.__game = game;
+    return game;
+}
 
 function createGame() {
     const width = 12;
@@ -65,16 +54,4 @@ function createGame() {
     })
 
     return game;
-}
-
-export function Sandbox() {
-    const game = useMemo(createGame, []);
-    window.__game = game;
-
-    return (
-        <div className="game">
-            <GameArea renderer={game.canvas} />
-            <div className="game-stats"></div>
-        </div>
-    )
 }
