@@ -23,7 +23,9 @@ const GameArea = observer(({ renderer }) => (
 ))
 
 function createGame() {
-    const cbox = new CompositeBox(4, 4);
+    const width = 12;
+    const height = 21;
+    const cbox = new CompositeBox(width, height);
 
     const box1 = new Box(new RXPoint(0, 0));
     box1.setPoints([new RXPoint(0, 0, { fill: "red" }), new RXPoint(0, 1, { fill: "red" })])
@@ -34,8 +36,15 @@ function createGame() {
     cbox.addBox(box1);
     cbox.addBox(box2);
 
-    const renderer = new Renderer(4, 4, cbox);
+    const renderer = new Renderer(width, height, cbox);
     const game = new Game(renderer);
+
+    Object.assign(globalThis, {
+        cbox,
+        box1,
+        box2,
+        RXPoint
+    })
 
     return game;
 }

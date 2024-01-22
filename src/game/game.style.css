@@ -1,6 +1,6 @@
 :root {
-  --area-columns: 4;
-  --area-rows: 4;
+  --area-columns: 12;
+  --area-rows: 21;
   --stats-min: 200px;
   --stats-max: 300px;
   --area-width: max(240px, 100vw - var(--stats-min));
@@ -72,7 +72,9 @@ body {
 
 .area-cell {
   border: 1px solid var(--area-cell-border-color);
-  animation: flicker 300ms ease-in;
+  animation: changed 300ms ease-in;
+  color: var(--game-area-bg);
+  background-color: currentColor;
 }
 
 .area-cell.element {
@@ -114,7 +116,7 @@ body {
 
 @keyframes changed {
   from {
-    filter: invert(50%)
+    filter: invert(75%)
   }
 
   to {
