@@ -1,13 +1,13 @@
 import cn from "classnames";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
-import { Box } from "../modules/models/Box";
-import { CompositeBox } from "../modules/models/CompositeBox";
-import { Game } from "../modules/models/Game";
-import { RXPoint } from "../modules/models/RXPoint";
+import { Box } from "../v2/canvas/Box";
+import { CompositeBox } from "../v2/canvas/CompositeBox";
+import { Game } from "../v2/game/Game";
+import { RXPoint } from "../v2/canvas/RXPoint";
 import "./game.style.css";
-import { Renderer } from "../modules/models/Renderer";
-import * as shapes from "../modules/shape-v2/main";
+import { Canvas } from "../v2/canvas/Canvas";
+import * as shapes from "../v2/game/shapes";
 
 const PointView = observer(
     ({ point }) =>
@@ -17,9 +17,9 @@ const PointView = observer(
         />
 )
 
-const GameArea = observer(({ renderer }) => (
+const GameArea = observer(({ renderer: canvas }) => (
     <div tabIndex="0" className="game-area">
-        {renderer.points.map(point => <PointView key={point.id} point={point} />)}
+        {canvas.points.map(point => <PointView key={point.id} point={point} />)}
     </div>
 ))
 
@@ -48,8 +48,8 @@ function createGame() {
     cbox.addBox(shT.box);
     cbox.addBox(shZ.box);
 
-    const renderer = new Renderer(width, height, cbox);
-    const game = new Game(renderer);
+    const canvas = new Canvas(width, height, cbox);
+    const game = new Game(canvas);
 
     Object.assign(globalThis, {
         cbox,
@@ -73,7 +73,7 @@ export function Sandbox() {
 
     return (
         <div className="game">
-            <GameArea renderer={game.renderer} />
+            <GameArea renderer={game.canvas} />
             <div className="game-stats"></div>
         </div>
     )

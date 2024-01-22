@@ -1,6 +1,6 @@
-import { Box } from "../models/Box";
-import { RXPoint } from "../models/RXPoint";
-import { Shape } from "./Shape";
+import { Box } from "../canvas/Box";
+import { RXPoint } from "../canvas/RXPoint";
+import { Shape } from "../canvas/Shape";
 import { getRandomColor } from "./utils";
 
 function createShape(params, options = {}) {

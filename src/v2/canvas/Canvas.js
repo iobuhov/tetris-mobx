@@ -1,7 +1,7 @@
 import { computed, makeObservable } from "mobx";
 import { UIPoint } from "./UIPoint";
 
-export class Renderer {
+export class Canvas {
     uiPoints
     constructor(width, height, compositeBox) {
         this.uiPoints = this.createUIPoints(width, height, compositeBox)
