@@ -3,10 +3,20 @@ import { RXPoint } from "../models/RXPoint";
 import { Shape } from "./Shape";
 import { getRandomColor } from "./utils";
 
+function createShape(params, options = {}) {
+    const fill = options.fill ?? getRandomColor();
+    const anchor = new RXPoint(...params.anchor);
+    const box = new Box(anchor);
+    const points = params.points.map(([x, y]) => new RXPoint(x, y, { fill }))
+    box.setPoints(points);
+    return new Shape(box, params.size);
+}
+
 export function shapeI(anchorX = 0, anchorY = 0) {
-    return new Shape(new Box(new RXPoint(anchorX, anchorY)), {
+    return createShape({
+        anchor: [anchorX, anchorY],
         size: [1, 4],
-        shapePoints: [
+        points: [
             [0, 0],
             [0, 1],
             [0, 2],
@@ -16,9 +26,10 @@ export function shapeI(anchorX = 0, anchorY = 0) {
 }
 
 export function shapeJ(anchorX = 0, anchorY = 0) {
-    return new Shape(new Box(new RXPoint(anchorX, anchorY)), {
+    return createShape({
+        anchor: [anchorX, anchorY],
         size: [2, 3],
-        shapePoints: [
+        points: [
             [1, 0],
             [1, 1],
             [1, 2],
@@ -28,9 +39,10 @@ export function shapeJ(anchorX = 0, anchorY = 0) {
 }
 
 export function shapeL(anchorX = 0, anchorY = 0) {
-    return new Shape(new Box(new RXPoint(anchorX, anchorY)), {
+    return createShape({
+        anchor: [anchorX, anchorY],
         size: [2, 3],
-        shapePoints: [
+        points: [
             [0, 0],
             [0, 1],
             [0, 2],
@@ -40,9 +52,10 @@ export function shapeL(anchorX = 0, anchorY = 0) {
 }
 
 export function shapeO(anchorX = 0, anchorY = 0) {
-    return new Shape(new Box(new RXPoint(anchorX, anchorY)), {
+    return createShape({
+        anchor: [anchorX, anchorY],
         size: [2, 2],
-        shapePoints: [
+        points: [
             [0, 0],
             [1, 0],
             [0, 1],
@@ -52,9 +65,10 @@ export function shapeO(anchorX = 0, anchorY = 0) {
 }
 
 export function shapeS(anchorX = 0, anchorY = 0) {
-    return new Shape(new Box(new RXPoint(anchorX, anchorY)), {
+    return createShape({
+        anchor: [anchorX, anchorY],
         size: [3, 2],
-        shapePoints: [
+        points: [
             [1, 0],
             [2, 0],
             [0, 1],
@@ -64,9 +78,10 @@ export function shapeS(anchorX = 0, anchorY = 0) {
 }
 
 export function shapeT(anchorX = 0, anchorY = 0) {
-    return new Shape(new Box(new RXPoint(anchorX, anchorY)), {
+    return createShape({
+        anchor: [anchorX, anchorY],
         size: [3, 2],
-        shapePoints: [
+        points: [
             [1, 0],
             [0, 1],
             [1, 1],
@@ -76,9 +91,10 @@ export function shapeT(anchorX = 0, anchorY = 0) {
 }
 
 export function shapeZ(anchorX = 0, anchorY = 0) {
-    return new Shape(new Box(new RXPoint(anchorX, anchorY)), {
+    return createShape({
+        anchor: [anchorX, anchorY],
         size: [3, 2],
-        shapePoints: [
+        points: [
             [0, 0],
             [1, 0],
             [1, 1],

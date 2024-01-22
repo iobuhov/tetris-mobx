@@ -3,16 +3,11 @@ import { RXPoint } from "../models/RXPoint"
 import { getRandomColor } from "./utils";
 
 export class Shape {
-    size = [0, 0]
+    size
     box
-    fill = getRandomColor()
-    constructor(box, { shapePoints, size }) {
+    constructor(box, size = [0, 0]) {
         this.size = size;
         this.box = box;
-        this.box.setPoints(
-            shapePoints.map(([x, y]) => new RXPoint(x, y, { fill: this.fill }))
-        );
-
         makeObservable(this, {
             rotateClockwise: action,
             rotateAnticlockwise: action,
@@ -28,6 +23,10 @@ export class Shape {
 
     get height() {
         return this.size.at(1);
+    }
+
+    get points() {
+        return this.box.points;
     }
 
     rotateClockwise() {
