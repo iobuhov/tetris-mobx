@@ -101,8 +101,8 @@ export class Game {
 
     endRound() {
         this.field.box.merge(this.shapeViewBox.points);
+        this.field.prune();
         this.compositeBox.removeBox(this.shapeViewBox);
-        // TODO: Remove full lines
         this.loadShape();
     }
 
@@ -137,35 +137,43 @@ export class Game {
         return this.field.box.isEmptyPoints(this.shape.getRotateKeys("cw"));
     }
 
+    get isPaused() {
+        return this.paused;
+    }
+
     moveShapeLeft() {
-        if (this.canMoveShapeLeft) {
+        if (!this.isPaused && this.canMoveShapeLeft) {
             this.shape.moveLeft();
             this.commitShape();
         }
     }
 
     moveShapeRight() {
-        if (this.canMoveShapeRight) {
+        if (!this.isPaused && this.canMoveShapeRight) {
             this.shape.moveRight();
             this.commitShape();
         }
     }
 
     moveShapeDown() {
-        if (this.canMoveShapeDown) {
+        if (!this.isPaused && this.canMoveShapeDown) {
             this.shape.moveDown();
             this.commitShape();
         }
     }
 
     rotateShape() {
-        if (this.canRotateShape) {
+        if (!this.isPaused && this.canRotateShape) {
             this.shape.rotateClockwise();
             this.commitShape();
         }
     }
 
     dropShape() {
+        if (this.isPaused) {
+            return;
+        }
+
         while (this.canMoveShapeDown) {
             this.shape.moveDown();
         }
