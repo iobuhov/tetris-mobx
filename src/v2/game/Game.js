@@ -1,11 +1,12 @@
-import { action, autorun, makeObservable, observable } from "mobx";
 import { Box } from "../canvas/Box";
 import { RXPoint } from "../canvas/RXPoint";
 
 export class Game {
     paused = false;
-    initialSpeed = 750;
-    gameSpeed = this.initialSpeed;
+    initialDelay = 750;
+    turnDelay = this.initialDelay;
+    gameEnded = false;
+    points = 0
     shape;
     shapeViewBox;
     constructor(canvas, compositeBox, field, factory) {
@@ -13,23 +14,17 @@ export class Game {
         this.compositeBox = compositeBox;
         this.field = field;
         this.shapeFactory = factory;
-
-        makeObservable(this, {
-            paused: observable,
-            gameSpeed: observable,
-            togglePause: action,
-            reset: action,
-        });
     }
 
     reset() {
         this.paused = false;
-        this.gameSpeed = this.initialSpeed;
+        this.turnDelay = this.initialDelay;
+        this.gameEnded = false;
         this.shape = undefined;
         this.compositeBox.reset();
         this.field.reset();
         this.compositeBox.addBox(this.field.box);
-        this.startGameTimer();
+        this.startTimer();
     }
 
     togglePause() {
@@ -37,6 +32,11 @@ export class Game {
     }
 
     tick() {
+        console.log("Game tick");
+        if (this.isPaused) {
+            return;
+        }
+
         if (!this.shape) {
             this.loadShape();
             return;
@@ -51,32 +51,35 @@ export class Game {
     }
 
     setupEffects() {
-        const disposer = autorun(() => this.startGameTimer());
-        return () => {
-            disposer();
-            if (this.stopTimer) {
-                this.stopTimer();
-            }
-        };
+        return this.startTimer();
     }
 
-    startGameTimer() {
-        const { paused, gameSpeed } = this;
-
+    startTimer() {
         if (this.stopTimer) {
             this.stopTimer();
         }
 
-        if (paused) {
-            return;
-        }
+        this.scheduleTick();
 
-        const timerId = setInterval(this.scheduleTick, gameSpeed);
-        this.stopTimer = () => clearInterval(timerId);
+        return () => this.stopTimer && this.stopTimer();
     }
 
     scheduleTick = () => {
-        requestAnimationFrame(() => this.tick());
+        let timerId;
+        let requestId = requestAnimationFrame(() => {
+            this.tick();
+            if (this.gameEnded) {
+                return;
+            }
+            timerId = setTimeout(this.scheduleTick, this.turnDelay);
+        });
+
+        this.stopTimer = () => {
+            clearTimeout(timerId);
+            cancelAnimationFrame(requestId);
+        }
+
+        return this.stopTimer;
     };
 
     loadShape() {
@@ -101,14 +104,26 @@ export class Game {
 
     endRound() {
         this.field.box.merge(this.shapeViewBox.points);
-        this.field.prune();
+        let prevPoints = this.points;
+        this.points += this.field.prune();
+        if (this.points > prevPoints) {
+            this.incGameSpeed();
+        }
         this.compositeBox.removeBox(this.shapeViewBox);
         this.loadShape();
     }
 
     gameOver() {
         console.log("game over");
-        this.stopTimer();
+        this.gameEnded = true;
+    }
+
+    incGameSpeed() {
+        if (this.turnDelay > 200) {
+            this.turnDelay = Math.floor(this.turnDelay * 0.93)
+            console.log(this.turnDelay);
+            console.log(this.points);
+        }
     }
 
     get isFull() {
@@ -137,40 +152,40 @@ export class Game {
         return this.field.box.isEmptyPoints(this.shape.getRotateKeys("cw"));
     }
 
-    get isPaused() {
-        return this.paused;
+    get canRunAction() {
+        return !this.gameEnded && !this.paused;
     }
 
     moveShapeLeft() {
-        if (!this.isPaused && this.canMoveShapeLeft) {
+        if (this.canRunAction && this.canMoveShapeLeft) {
             this.shape.moveLeft();
             this.commitShape();
         }
     }
 
     moveShapeRight() {
-        if (!this.isPaused && this.canMoveShapeRight) {
+        if (this.canRunAction && this.canMoveShapeRight) {
             this.shape.moveRight();
             this.commitShape();
         }
     }
 
     moveShapeDown() {
-        if (!this.isPaused && this.canMoveShapeDown) {
+        if (this.canRunAction && this.canMoveShapeDown) {
             this.shape.moveDown();
             this.commitShape();
         }
     }
 
     rotateShape() {
-        if (!this.isPaused && this.canRotateShape) {
+        if (this.canRunAction && this.canRotateShape) {
             this.shape.rotateClockwise();
             this.commitShape();
         }
     }
 
     dropShape() {
-        if (this.isPaused) {
+        if (!this.canRunAction) {
             return;
         }
 

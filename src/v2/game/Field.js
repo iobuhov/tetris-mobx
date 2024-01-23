@@ -46,32 +46,22 @@ export class Field {
         }
     }
 
-    // fillRand() {
-    //     const list = [
-    //         "cyan",
-    //         "blue",
-    //         "orange",
-    //         "yellow",
-    //         "green",
-    //         "pink",
-    //         "red",
-    //         undefined,
-    //     ];
-
-    //     const fillRect = Array.from({ length: this.width * (this.height / 2) }, () => {
-    //         return list[Math.floor(Math.random() * list.length)];
-    //     })
-
-    //     this.writeFillRect(fillRect);
-    // }
-
     prune() {
+        let points = 0;
         runInAction(() => {
-            const fillRect = this.pointsRect().flatMap(row => {
-                return row.every(p => p.fill) ? [] : row.map(p => p.fill)
+            const fillRect = this.pointsRect().map(row => row.map(p => p.fill))
+            const filteredRect = [];
+            fillRect.forEach(row => {
+                const isFull = row.every(fill => fill !== undefined)
+                if (isFull) {
+                    points += 1;
+                } else {
+                    filteredRect.push(row)
+                }
             })
             this.box.clear();
-            this.writeFillRect(fillRect);
+            this.writeFillRect(filteredRect);
         })
+        return points;
     }
 }

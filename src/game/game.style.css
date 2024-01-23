@@ -4,7 +4,7 @@
     --stats-min: 200px;
     --stats-max: 300px;
     --area-width: max(240px, 100vw - var(--stats-min));
-    --area-height: max(640px, 100vh);
+    --area-height: clamp(640px, 100vh, 960px);
     --cell-size-by-h: calc(var(--area-height) / var(--area-rows));
     --cell-size-by-w: calc(var(--area-width) / var(--area-columns));
     --cell-size: min(var(--cell-size-by-w), var(--cell-size-by-h));
@@ -37,10 +37,8 @@ body {
 
 .game {
     display: grid;
-    grid-template-columns: min-content minmax(
-            var(--stats-min),
-            var(--stats-max)
-        );
+    grid-template-columns: min-content minmax(var(--stats-min),
+            var(--stats-max));
     position: relative;
 }
 
@@ -77,7 +75,7 @@ body {
 
 .area-cell {
     border: 1px solid var(--area-cell-border-color);
-    animation: changed 100ms ease-in;
+    /* animation: changed 100ms ease-in; */
     color: var(--game-area-bg);
     background-color: currentColor;
 }
