@@ -20,16 +20,21 @@ export function useGame() {
          */
         function handleKeyDown(event) {
             if (event.code === "ArrowDown") {
-                game.tick();
+                game.startBoost(() => game.moveShapeDown(), 0)
+                // game.moveShapeDown();
                 return;
             }
 
             if (event.code === "ArrowLeft") {
-                return game.moveShapeLeft();
+                game.startBoost(() => game.moveShapeLeft(), 4);
+                // game.moveShapeLeft()
+                return;
             }
 
             if (event.code === "ArrowRight") {
-                return game.moveShapeRight();
+                game.startBoost(() => game.moveShapeRight(), 4);
+                // game.moveShapeRight()
+                return ;
             }
 
             if (event.code === "ArrowUp") {
@@ -49,6 +54,8 @@ export function useGame() {
             if (event.code === "Space") {
                 game.dropShape();
             }
+
+            game.stopBoost()
         }
 
         document.addEventListener("keydown", handleKeyDown);
@@ -64,8 +71,8 @@ export function useGame() {
 }
 
 function createGame() {
-    const width = 12;
-    const height = 21;
+    const width = 16;
+    const height = 32;
     const compositeBox = new CompositeBox(width, height);
     const field = new Field(width, height);
     const canvas = new Canvas(width, height, compositeBox);

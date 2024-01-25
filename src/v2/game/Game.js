@@ -5,6 +5,7 @@ export class Game {
     paused = false;
     initialDelay = 750;
     turnDelay = this.initialDelay;
+    delayCache = undefined;
     gameEnded = false;
     points = 0
     shape;
@@ -32,7 +33,7 @@ export class Game {
     }
 
     tick() {
-        console.log("Game tick");
+        // console.log("Game tick");
         if (this.isPaused) {
             return;
         }
@@ -189,10 +190,42 @@ export class Game {
             return;
         }
 
+
         while (this.canMoveShapeDown) {
             this.shape.moveDown();
         }
         this.commitShape();
         this.endRound();
+    }
+
+    startBoost(fn, skip = 4) {
+        if (this.runBoost) {
+            return;
+        }
+
+        let timerId, requestId;
+        let frameCount = 0;
+        let runFn = () => {
+            if (frameCount > 0) {
+                frameCount -= 1
+            } else {
+                fn()
+                frameCount = skip
+            }
+            requestId = requestAnimationFrame(runFn)
+        }
+        this.boostCleanup = () => {
+            clearTimeout(timerId);
+            cancelAnimationFrame(requestId);
+        }
+
+        this.runBoost = true;
+        runFn()
+    }
+
+    stopBoost() {
+        this.runBoost = false 
+        this.boostCleanup && this.boostCleanup()
+        this.boostCleanup = undefined;
     }
 }

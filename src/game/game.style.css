@@ -1,6 +1,6 @@
 :root {
-    --area-columns: 12;
-    --area-rows: 21;
+    --area-columns: 16;
+    --area-rows: 32;
     --stats-min: 200px;
     --stats-max: 300px;
     --area-width: max(240px, 100vw - var(--stats-min));
